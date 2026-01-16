@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Email Extractor Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #6b7280;
+            --secondary-hover: #4b5563;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --background: #f9fafb;
+            --card-bg: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: var(--background);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            gap: 0.5rem;
+        }
+
+        .btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-hover);
+            transform: translateY(-1px);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
+            transition: all 0.2s ease-in-out;
+            background-color: #f9fafb;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .loading {
+            display: none;
+            z-index: 50;
+        }
+
+        .status {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status.success {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .status.error {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border-left: 4px solid #ef4444;
+        }
+
+        .status.info {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .status.warning {
+            background-color: #fffbeb;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .status i {
+            font-size: 1.25rem;
+        }
+
+        .result-container {
+            position: relative;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        #result {
+            width: 100%;
+            min-height: 400px;
+            padding: 1.25rem;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #1f2937;
+            background-color: #f9fafb;
+            border: none;
+            resize: vertical;
+            outline: none;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 0rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.125rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Status notification styles */
+        .status-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .status-message {
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .status-message.success {
+            background-color: #10B981; /* Green */
+        }
+
+        .status-message.error {
+            background-color: #EF4444; /* Red */
+        }
+
+        .status-message.info {
+            background-color: #3B82F6; /* Blue */
+        }
+
+        .status-message.warning {
+            background-color: #F59E0B; /* Yellow */
+        }
+
+        .status-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background-color: rgba(255, 255, 255, 0.7);
+            width: 100%;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 4.5s linear;
+        }
+
+        .status-message.show .status-progress {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="statusContainer" class="status-container"></div>
+    <header class="header">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1><i class="fas fa-envelope-open-text mr-2"></i> Email Extractor Pro [RDNS]</h1>
+            <p class="max-w-2xl mx-auto">Securely extract and manage your Gmail emails</p>
+        </div>
+    </header>
+    
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        
+        <div class="card p-6 mb-6 transition-all duration-300 hover:shadow-lg">
+            <h2 class="section-title">
+                <i class="fas fa-plug"></i>
+                <span>Gmail Connection</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" class="input-field" placeholder="your-email@gmail.com">
+                </div>
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">App Password</label>
+                    <input type="password" id="password" class="input-field" placeholder="App Password">
+                </div>
+                <div class="flex items-end">
+                    <button id="btnConnect" class="btn btn-primary w-full h-[42px]">
+                        <i class="fas fa-plug mr-2"></i>Connect
+                    </button>
+                </div>
+            </div>
+            
+            <div id="extractSection" class="h">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Label</label>
+                        <select id="labelSelect" class="w-full p-2 border rounded">
+                            <option value="">-- Select a label --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start from</label>
+                        <input type="number" id="startFrom" min="1" value="1" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Number to extract</label>
+                        <input type="number" id="extractCount" min="1" value="10" class="w-full p-2 border rounded">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="btnExtract" class="btn-primary px-4 py-2 rounded w-full">
+                            <i class="fas fa-download"></i> Extract Emails
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card p-6 mt-8 transition-all duration-300 hover:shadow-lg">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="section-title">
+                    <i class="fas fa-envelope"></i>
+                    <span>Extracted Emails</span>
+                </h2>
+                <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                    <button id="btnCopy" class="btn btn-secondary flex-1 sm:flex-none">
+                        <i class="far fa-copy"></i>
+                        <span>Copy All</span>
+                    </button>
+                    <button id="btnDownload" class="btn btn-primary flex-1 sm:flex-none">
+                        <i class="fas fa-file-download"></i>
+                        <span>Download</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="relative result-container">
+                <div id="loading" class="loading absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+                    <div class="text-center p-6 bg-white rounded-lg shadow-lg">
+                        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-500 mx-auto mb-4"></div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-1">Processing Your Request</h3>
+                        <p class="text-gray-600">Extracting emails, please wait...</p>
+                        <div class="mt-4 h-1 w-24 bg-gray-200 rounded-full mx-auto overflow-hidden">
+                            <div class="h-full bg-indigo-500 rounded-full animate-pulse" style="width: 66%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+                    <div class="text-xs text-gray-500 font-mono">
+                        <span id="charCount">0</span> characters • 
+                        <span id="lineCount">0</span> lines
+                    </div>
+                    <button id="btnClear" class="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="far fa-trash-alt mr-1"></i> Clear
+                    </button>
+                </div>
+                
+                <textarea 
+                    id="result" 
+                    class="w-full min-h-[400px] p-4 font-mono text-sm bg-white focus:outline-none resize-none" 
+                    placeholder="Extracted emails will appear here..."
+                    spellcheck="false"
+                    readonly
+                ></textarea>
+            </div>
+            
+            <div id="status" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const btnConnect = document.getElementById('btnConnect');
+            const extractSection = document.getElementById('extractSection');
+            const labelSelect = document.getElementById('labelSelect');
+            const startFromInput = document.getElementById('startFrom');
+            const extractCountInput = document.getElementById('extractCount');
+            const btnExtract = document.getElementById('btnExtract');
+            const resultTextarea = document.getElementById('result');
+            const btnCopy = document.getElementById('btnCopy');
+            const btnDownload = document.getElementById('btnDownload');
+            const loading = document.getElementById('loading');
+            const statusDiv = document.getElementById('status');
+            
+            // Connect to Gmail
+            btnConnect.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (!email || !password) {
+                    showStatus('Please enter both email and app password', 'error');
+                    return;
+                }
+                
+                try {
+                    loading.style.display = 'flex';
+                    const response = await fetch('/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Populate labels
+                        labelSelect.innerHTML = '<option value="">-- Select a label --</option>';
+                        data.labels.forEach(label => {
+                            const option = document.createElement('option');
+                            option.value = label.name;
+                            
+                            // Access the total count from the count object
+                            const count = (label && label.count && typeof label.count.total !== 'undefined') 
+                                ? label.count.total 
+                                : 0;
+                            
+                            // Remove [Gmail] prefix and any following / from the label name
+                            const displayName = label.name.replace(/^\[Gmail\]\s*\/?\s*/, '');
+                            option.textContent = `${displayName} (${count} emails)`;
+                            option.setAttribute('data-count', count); // Store count as data attribute
+                            labelSelect.appendChild(option);
+                        });
+                        
+                        showStatus('Successfully connected to Gmail', 'success');
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showStatus(`Connection error: ${error.message}`, 'error');
+                } finally {
+                    loading.style.display = 'none';
+                }
+            });
+            
+            // Extract emails
+            btnExtract.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+                const label = labelSelect.value;
+                const startFrom = parseInt(startFromInput.value);
+                const extractCount = parseInt(extractCountInput.value);
+                
+                if (!label) {
+                    showStatus('Please select a label', 'error');
+                    return;
+                }
+                
+                try {
+                    loading.style.display = 'flex';
+                    resultTextarea.value = '';
+                    
+                    const response = await fetch('/extract', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password,
+                            label,
+                            start: startFrom,
+                            count: extractCount
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        resultTextarea.value = data.content;
+                        showStatus(`Successfully extracted ${data.extracted} emails`, 'success');
+                    } else {
+                        showStatus(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    showStatus(`Extraction error: ${error.message}`, 'error');
+                } finally {
+                    loading.style.display = 'none';
+                }
+            });
+            
+            // Copy to clipboard
+            btnCopy.addEventListener('click', () => {
+                resultTextarea.select();
+                document.execCommand('copy');
+                showStatus('Copied to clipboard!', 'success');
+            });
+            
+            // Download file
+            btnDownload.addEventListener('click', () => {
+                window.location.href = '/download';
+            });
+            
+            // Helper function to show status messages
+            function showStatus(message, type = 'info') {
+                const statusContainer = document.getElementById('statusContainer');
+                const statusId = 'status-' + Date.now();
+                
+                const statusDiv = document.createElement('div');
+                statusDiv.id = statusId;
+                statusDiv.className = `status-message ${type}`;
+                
+                const progressBar = document.createElement('div');
+                progressBar.className = 'status-progress';
+                
+                statusDiv.innerHTML = message;
+                statusDiv.appendChild(progressBar);
+                statusContainer.prepend(statusDiv);
+                
+                // Trigger the animation
+                setTimeout(() => {
+                    statusDiv.classList.add('show');
+                    
+                    // Start progress bar animation
+                    setTimeout(() => {
+                        progressBar.style.transform = 'scaleX(0)';
+                    }, 50);
+                }, 10);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    statusDiv.classList.remove('show');
+                    setTimeout(() => {
+                        if (document.getElementById(statusId)) {
+                            statusDiv.remove();
+                        }
+                    }, 300);
+                }, 5000);
+
+                // Update character and line count
+                updateTextStats();
+            }
+            // Clear button functionality
+            document.getElementById('btnClear').addEventListener('click', () => {
+                resultTextarea.value = '';
+                updateTextStats();
+                showStatus('Text cleared', 'info');
+            });
+
+            // Update character and line count
+            function updateTextStats() {
+                const text = resultTextarea.value;
+                document.getElementById('charCount').textContent = text.length.toLocaleString();
+                document.getElementById('lineCount').textContent = text ? text.split('\n').length : 0;
+            }
+
+            // Update stats when text changes
+            resultTextarea.addEventListener('input', updateTextStats);
+
+            // Initialize stats
+            updateTextStats();
+        });
+    </script>
+    
+    <script>
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Add animation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease-in-out';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
