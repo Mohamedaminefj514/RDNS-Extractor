@@ -17,6 +17,9 @@ const OUTPUT_FILE = 'merged_emails.txt';
 const PORT = process.env.PORT || 3000;
 const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE || '10mb';
 
+// Trust proxy (required for Railway, Render, Heroku, etc.)
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
