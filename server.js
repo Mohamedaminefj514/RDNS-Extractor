@@ -21,7 +21,18 @@ const MAX_FILE_SIZE = process.env.MAX_FILE_SIZE || '10mb';
 app.set('trust proxy', true);
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+        },
+    },
+}));
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   optionsSuccessStatus: 200
